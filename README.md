@@ -19,6 +19,18 @@ Mongoose plugin for document merging
 The method <i>merge</i> is added to all mongoose documents. It takes a source object as parameter and merge it in the target existing documents. It checks for existing values in the source object regarding the field path of the destination document.
 It does not merge the <i>\_id</i> and <i>\_\_v</i> default fields and check for the schema field option <i>mergeable</i>. If the option is false, the merge skip the field as well.
 
+It also checks the path options of the schema for the <i>mergeidentifier</i> and <i>mergeoverride</i> options, which are used to merge arrays of subschemas.
+
+* <b>mergeidentifier</b>
+
+> Default: _id
+> The field, which is used to find the subitem to update.
+
+* <b>mergeoverride</b>
+
+> Default: false
+> If set to true, it will not replace the whole array, but iterate through it and merge subdocuments found by the <i>mergeidentifier</i> with the new value or if not found append it to the array.
+
 The method <i>merge</i> accept a second parameter that is the merge options. this parameter allow to specify a filter on fields when calling the merge.
 
 * <b>options.fields</b>
@@ -46,6 +58,57 @@ test.merge({ name: "testChanged", description: "descChanged", notMergedField: "t
 console.log(test); // LOG: { i_id: ..., name: testChanged, description: descChanged, notMergedField: testNMF ...}
 test.merge({ name: "test", description: "desc" }, { fields: "-description" });
 console.log(test); // LOG: { i_id: ..., name: test, description: descChanged, notMergedField: testNMF ...}
+</pre>
+
+### Deep Merge
+<pre>
+var mongoose = require('mongoose'),
+    Schema = mongoose.Schema,
+    merge = require('mongoose-merge-plugin');
+
+mongoose.plugin(merge);
+var subSchema = new Schema({
+    name: String,
+    keywords: { type: [String], mergeoverride: false }
+});
+
+var majorSchema = new Schema({
+    subs: {type: [subSchema], mergeoverride: false, mergeidentifier: 'name'},
+    title: String
+});
+
+var TestModel = mongoose.model('TestModel', majorSchema);
+var major = new TestModel({
+    title: 'My Major',
+    subs: [
+        {
+            name: 'Sub No 1',
+            keywords: ['Key']
+        },
+        {
+            name: 'One Time Sub',
+            keywords: ['newest']
+        }
+    ]
+});
+
+console.log(major.title);
+console.log(major.subs);
+
+major.merge({
+    subs: [
+        {
+            name: 'Sub No 1',
+            keywords: ['Words']
+        },
+        {
+            name: 'Newer Sub'
+        }
+    ]
+});
+
+console.log(major.title);
+console.log(major.subs);
 </pre>
 
 ## Support
