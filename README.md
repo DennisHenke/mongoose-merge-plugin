@@ -23,13 +23,15 @@ It also checks the path options of the schema for the <i>mergeidentifier</i> and
 
 * <b>mergeidentifier</b>
 
-> Default: _id
+> Default: _id  
 > The field, which is used to find the subitem to update.
 
 * <b>mergeoverride</b>
 
-> Default: false
-> If set to true, it will not replace the whole array, but iterate through it and merge subdocuments found by the <i>mergeidentifier</i> with the new value or if not found append it to the array.
+> Default: true  
+> If set to false, it will not replace the whole array, but iterate through it and merge subdocuments found by the <i>mergeidentifier</i> with the new value or if not found append it to the array.
+
+
 
 The method <i>merge</i> accept a second parameter that is the merge options. this parameter allow to specify a filter on fields when calling the merge.
 
